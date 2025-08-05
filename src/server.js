@@ -1,5 +1,11 @@
 import express from "express";
 
+// importing routes
+import user_routes from "./routes/user.routes.js";
+import booking_routes from "./routes/booking.routes.js";
+import package_routes from "./routes/package.routes.js";
+import auth_routes from "./routes/auth.routes.js";
+
 const PORT = 8080;
 
 // * creating express app instance
@@ -12,54 +18,15 @@ app.get("/", (req, res) => {
   });
 });
 
+// ! using routes
+
+app.use("/user", user_routes);
+app.use("/package", package_routes);
+app.use("/auth", auth_routes);
+app.use("/booking", booking_routes);
+
 // * listenfing on server
 app.listen(PORT, () => {
   console.log(`server is up and running at http://localhost:${PORT}`);
   console.log(`press ctrl + c to close server..`);
 });
-
-// * crud user
-// * register user
-// * implement actual Register user logic
-app.post("/auth/register", (req, res) => {
-  res.status(201).json({
-    message: "User Registered",
-    status: "success",
-  });
-});
-
-// * login
-// * implement actual  user login  logic
-
-app.post("/auth/login", (req, res) => {
-  res.status(201).json({
-    message: "User login success",
-    status: "success",
-  });
-});
-
-// * update profile
-app.put("/user/:id", (req, res) => {
-  res.status(200).json({
-    message: "profile updated",
-    status: "success",
-  });
-});
-
-// get user by id
-app.get("/user:id", (req, res) => {
-  res.status(200).json({
-    message: "user by id fetched",
-    status: "success",
-  });
-});
-
-// user
-// package
-// Booking
-
-// contollers
-
-// to do package
-// delete
-// update
