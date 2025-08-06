@@ -1,44 +1,26 @@
 import express from "express";
+import {
+  create,
+  getAll,
+  getBayId,
+  update,
+  remove,
+} from "../controllers/package.controller.js";
 
 const router = express.Router();
 
 // post
-router.post("/", (req, res) => {
-  res.status(201).json({
-    message: "package created ",
-    status: "success",
-  });
-});
-
-router.get("/", (req, res) => {
-  res.status(200).json({
-    message: "package fatched ",
-    status: "success",
-  });
-});
+router.post("/", create);
+// get all
+router.get("/", getAll);
 
 // getby id
-router.get("/:id", (req, res) => {
-  res.status(200).json({
-    message: "package fatched ",
-    status: "success",
-  });
-});
+router.get("/:id", getBayId);
 
 // delete
-router.delete("/:id", (req, res) => {
-  res.status(200).json({
-    message: "package deleted",
-    status: "success",
-  });
-});
+router.delete("/:id", remove);
 
 // update
-router.put("/:id", (req, res) => {
-  res.status(200).json({
-    message: "package updated",
-    status: "success",
-  });
-});
+router.put("/:id", update);
 
 export default router;

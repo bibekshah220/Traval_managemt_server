@@ -1,36 +1,21 @@
 import express from "express";
-
+import {
+  profile,
+  getBayId,
+  userbyid,
+  remove,
+} from "../controllers/user.controller";
 const router = express.Router();
 
 // * update profile
-router.put("/:id", (req, res) => {
-  res.status(200).json({
-    message: "profile updated",
-    status: "success",
-  });
-});
+router.put("/:id", profile);
 
 // get user by id
-router.get("/:id", (req, res) => {
-  res.status(200).json({
-    message: "user by id fetched",
-    status: "success",
-  });
-});
+router.get("/:id", getBayId);
 
 // get user by id
-router.get("/", (req, res) => {
-  res.status(200).json({
-    message: "all user  fetched",
-    status: "success",
-  });
-});
+router.get("/", userbyid);
 
-router.delete("/:id", (req, res) => {
-  res.status(200).json({
-    message: `User with ID deleted`,
-    status: "success",
-  });
-});
+router.delete("/:id", remove);
 
 export default router;
