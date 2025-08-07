@@ -10,7 +10,7 @@ const PORT = 8080;
 
 // * creating express app instance
 const app = express();
-
+app.use(express.json({ limit: "10mb" }));
 // ping route
 app.get("/", (req, res) => {
   res.status(200).json({
