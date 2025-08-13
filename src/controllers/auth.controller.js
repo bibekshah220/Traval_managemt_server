@@ -1,53 +1,67 @@
-// implement actual register user logic
-const users = [];
+// auth
+// req.url
+// params
+// query
+// body
 
-export const userRegister = (req, res) => {
-  const data = req.body;
+export const users = [];
+
+export const register = (request, response) => {
+  // * implement actual user register logic
+  const data = request.data;
   console.log(data);
+
   if (!data) {
-    res.status(400).json({
-      message: "data exprected",
+    response.status(400).json({
+      message: "data expected",
       status: "error",
     });
     return;
   }
   users.push(data);
-  res.status(201).json({
-    message: "User Registered",
+
+  response.status(201).json({
+    message: "Account created",
     status: "success",
   });
 };
 
-export const login = (req, res) => {
+export const login = (request, response) => {
   // * implement actual user login logic
-  const data = req.body;
+
+  const data = request.body;
   console.log(data);
+
   if (!data) {
-    res.status(400).json({
-      message: " data expected",
-      status: "error",
-    });
-    return;
-  }
-  const user = users.find((usr) => usr.email === data.email);
-  if (!user) {
-    res.status(400).json({
-      message: " email or password does not match",
+    response.status(400).json({
+      message: "data expected",
       status: "error",
     });
     return;
   }
 
-  const isPassMatch = user.password === data.password;
-  if (!isPassMatch) {
-    res.status(400).json({
-      message: " email or password does not match",
+  const users = users.find((usr) => usr.email === data.email);
+
+  if (!users) {
+    response.status(400).json({
+      message: "email or password does not  match",
       status: "error",
     });
     return;
   }
-  res.status(201).json({
-    message: "User login success",
+
+  const ispassmatch = users.password === data.password;
+
+  if (!ispassmatch) {
+    response.status(400).json({
+      message: "email or password does not  match",
+      status: "error",
+    });
+    return;
+  }
+
+  response.status(201).json({
+    message: " user login success",
     status: "success",
   });
 };

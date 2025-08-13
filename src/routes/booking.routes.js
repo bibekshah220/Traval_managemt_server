@@ -1,8 +1,8 @@
 import express from "express";
 import {
-  create,
-  getBayId,
-  getAll,
+  booking,
+  getById,
+  get,
   remove,
   update,
 } from "../controllers/booking.controller.js";
@@ -10,15 +10,15 @@ import {
 const router = express.Router();
 
 // Booking
-router.get("/", getAll);
+router.get("/", get);
 // create
-router.post("/", create);
+router.post("/", booking);
 
 // update
 router.put("/:id", update);
 
 // getby id
-router.get("/:id", getBayId);
+router.get("/:id", getById);
 
 // delete
 router.delete("/:id", remove);
