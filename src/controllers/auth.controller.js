@@ -1,67 +1,82 @@
-// auth
-// req.url
-// params
-// query
-// body
+import User from "../models/user.model.js";
 
-export const users = [];
+//* Register Controller
+export const register = async (request, response, next) => {
+  try {
+    const data = request.body;
+    console.log("Register request:", data);
 
-export const register = (request, response) => {
-  // * implement actual user register logic
-  const data = request.data;
-  console.log(data);
+    if (
+      !data ||
+      !data.email ||
+      !data.password ||
+      !data.first_name ||
+      !data.last_name
+    ) {
+      return response.status(400).json({
+        message: "Missing required fields",
+        status: "error",
+      });
+    }
 
-  if (!data) {
-    response.status(400).json({
-      message: "data expected",
+    // Save to MongoDB
+    const user = await User.create({ ...data });
+
+    return response.status(201).json({
+      message: "Account created",
+      status: "success",
+      userId: user._id,
+    });
+  } catch (error) {
+    console.error("Registration error:", error);
+    return response.status(500).json({
+      message: "Registration failed",
       status: "error",
     });
-    return;
   }
-  users.push(data);
-
-  response.status(201).json({
-    message: "Account created",
-    status: "success",
-  });
 };
 
-export const login = (request, response) => {
-  // * implement actual user login logic
+// Login Controller
+export const login = async (request, response, next) => {
+  try {
+    const data = request.body;
+    console.log("Login request:", data);
 
-  const data = request.body;
-  console.log(data);
+    if (!data || !data.email || !data.password) {
+      return response.status(400).json({
+        message: "Email and password are required",
+        status: "error",
+      });
+    }
 
-  if (!data) {
-    response.status(400).json({
-      message: "data expected",
-      status: "error",
+    // Search user from in-memory array
+    const user = await User.findOne({ email: data.email });
+
+    if (!user) {
+      next({
+        message: "Email or password does not match",
+        status: "error",
+      });
+    }
+
+    const isPasswordMatch = user.password === data.password;
+
+    if (!isPasswordMatch) {
+      next({
+        message: "Email or password does not match",
+        status: "error",
+      });
+    }
+
+    next({
+      message: "User login successful",
+      status: "success",
     });
-    return;
-  }
-
-  const users = users.find((usr) => usr.email === data.email);
-
-  if (!users) {
-    response.status(400).json({
-      message: "email or password does not  match",
+  } catch (error) {
+    next({
+      message: error?.message || "something went wrong",
       status: "error",
+      statusCode: 500,
     });
-    return;
   }
-
-  const ispassmatch = users.password === data.password;
-
-  if (!ispassmatch) {
-    response.status(400).json({
-      message: "email or password does not  match",
-      status: "error",
-    });
-    return;
-  }
-
-  response.status(201).json({
-    message: " user login success",
-    status: "success",
-  });
 };

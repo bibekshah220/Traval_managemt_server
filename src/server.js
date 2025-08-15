@@ -5,18 +5,23 @@ import user_routes from "./routes/user.routes.js";
 import booking_routes from "./routes/booking.routes.js";
 import package_routes from "./routes/package.routes.js";
 import auth_routes from "./routes/auth.routes.js";
-import { errorHandler } from "./middlewares/error.handler.milldeware.js";
+import { errorHandler } from "./middlewares/error.handler.middleware.js";
+import { connect_db } from "./config/mongodb.config.js";
 
 const PORT = 8080;
 
+// ! connecting to database
+
+connect_db();
+
 const middleware1 = (req, res, next) => {
   console.log("i am middleware 1");
-  console.log("req.user");
+  console.log(req.user);
   next();
 };
 
 const middleware2 = (req, res, next) => {
-  console.log("i am middleware 1");
+  console.log("i am middleware 2");
   req.user = {
     name: "bibek",
     email: "bibekshah425@gmail.com",
@@ -25,12 +30,11 @@ const middleware2 = (req, res, next) => {
 };
 
 // * using middleware
-// * creating express app instance
 const app = express();
-// app.use(middleware1);
-// app.use(middleware1);
-
+app.use(middleware1);
+app.use(middleware2);
 app.use(express.json({ limit: "10mb" }));
+
 // ping route
 app.get("/", (req, res) => {
   res.status(200).json({
@@ -39,14 +43,14 @@ app.get("/", (req, res) => {
 });
 
 // ! using routes
-
 app.use("/user", user_routes);
 app.use("/package", package_routes);
 app.use("/auth", auth_routes);
 app.use("/booking", booking_routes);
 
+// 404 handler
 app.use((req, res, next) => {
-  const message = `Can not ${req.method} on ${req.originalUrl}`;
+  const message = `Cannot ${req.method} on ${req.originalUrl}`;
   const error = new Error(message);
   next({
     message,
@@ -56,12 +60,11 @@ app.use((req, res, next) => {
   });
 });
 
-// * listenfing on server
-app.listen(PORT, () => {
-  console.log(`server is up and running at http://localhost:${PORT}`);
-  console.log(`press ctrl + c to close server..`);
-});
-
-// !error handler
-
+// ! error handler
 app.use(errorHandler);
+
+// * start server
+app.listen(PORT, () => {
+  console.log(`Server is running at http://localhost:${PORT}`);
+  console.log(`Press Ctrl + C to stop the server`);
+});
