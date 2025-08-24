@@ -10,7 +10,7 @@ export const connect_db = () => {
     .then(() => {
       console.log("database connected successfully");
     })
-    .catch(() => {
+    .catch((error) => {
       console.log("------------db connection error------------------");
       console.log(error);
     });

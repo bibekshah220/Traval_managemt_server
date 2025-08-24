@@ -1,76 +1,71 @@
+import AppError from "../middlewares/error.handler.middleware.js";
 import User from "../models/user.model.js";
+import { hash_password } from "../ultils/brcypt.ultils.js";
 
 //* Register Controller
 export const register = async (request, response, next) => {
   try {
-    const data = request.body;
-    console.log("Register request:", data);
+    const { first_name, last_name, password, phone, role, email, gender } =
+      request.body;
 
-    if (
-      !data ||
-      !data.email ||
-      !data.password ||
-      !data.first_name ||
-      !data.last_name
-    ) {
-      return response.status(400).json({
-        message: "Missing required fields",
-        status: "error",
-      });
+    if (!password) {
+      throw new AppError("password is required", 400);
     }
 
-    // Save to MongoDB
-    const user = await User.create({ ...data });
+    const hashed = await hash_password(password);
 
-    return response.status(201).json({
+    // Save to MongoDB
+    const user = await User.create({
+      first_name,
+      last_name,
+      password: hashed,
+      phone,
+      email,
+      role,
+      gender,
+    });
+
+    response.status(201).json({
       message: "Account created",
       status: "success",
-      userId: user._id,
+      userId: user,
     });
   } catch (error) {
-    console.error("Registration error:", error);
-    return response.status(500).json({
-      message: "Registration failed",
-      status: "error",
-    });
+    next(error);
   }
 };
 
 // Login Controller
 export const login = async (request, response, next) => {
   try {
-    const data = request.body;
+    const { email, password } = request.body;
     console.log("Login request:", data);
 
-    if (!data || !data.email || !data.password) {
-      return response.status(400).json({
-        message: "Email and password are required",
-        status: "error",
-      });
+    if (!password) {
+      throw new AppError("password is required", 400);
+    }
+    if (!email) {
+      throw new AppError("email is required", 400);
     }
 
+    const user = await User.findOne({ email });
+
     // Search user from in-memory array
-    const user = await User.findOne({ email: data.email });
 
     if (!user) {
-      next({
-        message: "Email or password does not match",
-        status: "error",
-      });
+      throw new AppError("email or password does not match", 400);
     }
 
     const isPasswordMatch = user.password === data.password;
 
     if (!isPasswordMatch) {
-      next({
-        message: "Email or password does not match",
-        status: "error",
-      });
+      throw new AppError("email or password does not match", 400);
     }
 
-    next({
-      message: "User login successful",
+    response.status(201).json({
+      message: "user login success",
       status: "success",
+      data: "user",
     });
   } catch (error) {
     next({

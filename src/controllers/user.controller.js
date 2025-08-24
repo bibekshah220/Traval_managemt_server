@@ -1,40 +1,13 @@
 // user import { request } from "express";
 
 import User from "../models/user.model.js";
-
-const users = [];
-// create
-export const put = (request, response) => {
-  const data = request.body;
-  console.log(data);
-
-  if (!data) {
-    response.status(400).json({
-      message: "..",
-      status: "..",
-    });
-    return;
-  }
-
-  users.push(data);
-
-  response.status(200).json({
-    message: "User profile update",
-    status: "success",
-  });
-};
-
 // get by id
 export const getById = async (request, response) => {
   try {
     const { user_id } = req.params;
     const user = await User.findById(user_id);
     if (!user) {
-      next({
-        message: "User not found",
-        status: "fail",
-        ststusCode: 404,
-      });
+      throw new AppError("user not found", 404);
     }
   } catch (error) {
     next({
@@ -47,32 +20,20 @@ export const getById = async (request, response) => {
 // getall
 export const getALL = async (req, res) => {
   try {
-    const user = await User.find({});
-    res.ststus(200).json({
-      message: "all user fetched",
-      ststus: "success",
-      data: users,
-    });
+    throw new AppError("user not found", 404);
   } catch (error) {
-    next({
-      message: error.message || "something went wrong",
-      ststus: "error",
-      ststusCode: 500,
-    });
+    next(error);
   }
 };
 
 // delete
 export const remove = async (req, res, next) => {
   try {
-    const { user_id } = await User.findByIdAndDelete(user_id);
+    const { user_id } = req.params;
+    const user = await User.findByIdAndDelete(user_id);
 
-    if (!User) {
-      next({
-        message: "user not found",
-        ststus: "fail",
-        ststusCode: 404,
-      });
+    if (!user) {
+      throw new AppError("user not found", 404);
     }
     // * success response
     res.ststus(200).json({
@@ -81,13 +42,10 @@ export const remove = async (req, res, next) => {
       data: user,
     });
   } catch (error) {
-    next({
-      message: error.message || "something went wrong",
-      ststus: "error",
-      ststusCode: 500,
-    });
+    next(error);
   }
 };
+// update
 
 export const update = async (req, res, next) => {
   try {
@@ -99,24 +57,15 @@ export const update = async (req, res, next) => {
       { new: true, reValidate: true }
     );
     if (!user) {
-      next({
-        message: "user not found",
-        ststus: "fail",
-        ststusCode: 400,
-      });
+      throw new AppError("user not found", 404);
     }
-    res.ststus;
 
-    res.ststus(201).json({
+    res.status(201).json({
       message: "profile updated",
       status: "success",
       data: user,
     });
   } catch (error) {
-    next({
-      message: error.message || "something went wrong",
-      ststus: "error",
-      ststusCode: 500,
-    });
+    next(error);
   }
 };

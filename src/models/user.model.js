@@ -7,20 +7,20 @@ const userSchema = mongoose.Schema(
   {
     first_name: {
       type: String,
-      required: true,
+      required: [true, "first_name is required"],
     },
     last_name: {
       type: String,
-      required: true,
+      required: [true, "last_name is required"],
     },
     email: {
       type: String,
-      required: true,
-      unique: true,
+      required: [true, "mail is required"],
+      unique: [true, "User with provided email already exixts"],
     },
     password: {
       type: String,
-      required: true,
+      required: [true, "password is required"],
     },
     phone: {
       type: String,
@@ -36,7 +36,7 @@ const userSchema = mongoose.Schema(
       default: gender.MALE,
     },
   },
-  { timestamps: true }
+  { timestamps: [true] }
 );
 
 // * Creating the "User" model from the schema

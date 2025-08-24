@@ -1,3 +1,5 @@
+import "dotenv/config";
+
 import express from "express";
 
 // importing routes
@@ -8,7 +10,7 @@ import auth_routes from "./routes/auth.routes.js";
 import { errorHandler } from "./middlewares/error.handler.middleware.js";
 import { connect_db } from "./config/mongodb.config.js";
 
-const PORT = 8080;
+const PORT = process.env.PORT;
 
 // ! connecting to database
 
