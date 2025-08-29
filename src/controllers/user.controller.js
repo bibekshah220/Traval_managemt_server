@@ -30,10 +30,14 @@ export const getALL = async (req, res) => {
 export const remove = async (req, res, next) => {
   try {
     const { user_id } = req.params;
-    const user = await User.findByIdAndDelete(user_id);
+    const user = await User.findById(user_id);
 
     if (!user) {
       throw new AppError("user not found", 404);
+    }
+
+    if (user.profile_image) {
+      await delete_file(user.profile_image.public_id);
     }
     // * success response
     res.ststus(200).json({
@@ -60,6 +64,20 @@ export const update = async (req, res, next) => {
       throw new AppError("user not found", 404);
     }
 
+    if (file) {
+      const { path, public_id } = await upload_file(file.path);
+      // delete old profile image
+      if (user.profile_image) {
+        await delete_file(user.profile_image.public_id);
+      }
+
+      user.profile_image = {
+        path,
+        public_id,
+      };
+      await user.save();
+    }
+
     res.status(201).json({
       message: "profile updated",
       status: "success",
@@ -67,5 +85,14 @@ export const update = async (req, res, next) => {
     });
   } catch (error) {
     next(error);
+  }
+};
+
+export const delete_file = async (public_id) => {
+  try {
+    return await cloudinary.uploader.destroy(public_id);
+  } catch (error) {
+    console.log(error);
+    throw new AppError("file delete", 500);
   }
 };

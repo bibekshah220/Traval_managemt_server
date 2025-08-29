@@ -21,10 +21,20 @@ const userSchema = mongoose.Schema(
     password: {
       type: String,
       required: [true, "password is required"],
+      select: false,
     },
     phone: {
       type: String,
     },
+    profile_image: {
+      path: {
+        type: String,
+      },
+      public_id: {
+        type: String,
+      },
+    },
+
     role: {
       type: String,
       enum: Object.values(role),

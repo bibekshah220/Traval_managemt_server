@@ -3,7 +3,7 @@ class AppError extends Error {
     super(message);
     this.statusCode = statusCode;
     this.status = statusCode >= 400 && statusCode < 500 ? "fail" : "error";
-    Error.captureStackTrace(this.AppError);
+    Error.captureStackTrace(this, AppError);
   }
 }
 

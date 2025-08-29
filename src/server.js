@@ -33,9 +33,10 @@ const middleware2 = (req, res, next) => {
 
 // * using middleware
 const app = express();
-app.use(middleware1);
-app.use(middleware2);
 app.use(express.json({ limit: "10mb" }));
+
+// serving uploads as static file
+app.get("/uploads", express.static("uploads/"));
 
 // ping route
 app.get("/", (req, res) => {
