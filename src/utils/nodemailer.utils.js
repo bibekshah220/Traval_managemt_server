@@ -1,5 +1,5 @@
 import nodemailer from "nodemailer";
-import AppError from "../middlewares/error.handler.middleware.js";
+import AppError from "../middlewares/error-handler.middleware.js";
 import { smpt_config } from "../config/config.js";
 
 // transport
@@ -16,7 +16,7 @@ const transpoter = nodemailer.createTransport({
 });
 
 // send mail
-export const send_mail = async (
+export const send_email = async (
   to,
   subject,
   html,

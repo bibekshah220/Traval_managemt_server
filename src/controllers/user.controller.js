@@ -1,46 +1,62 @@
-// user import { request } from "express";
-
+import AppError from "../middlewares/error-handler.middleware.js";
 import User from "../models/user.model.js";
-// get by id
-export const getById = async (request, response) => {
+import { delete_file, upload_file } from "../utils/cloudinary.utils.js";
+
+// * get user by id
+export const getById = async (req, res) => {
   try {
     const { user_id } = req.params;
-    const user = await User.findById(user_id);
+
+    const user = await User.findOne({ _id: user_id });
+
     if (!user) {
-      throw new AppError("user not found", 404);
+      throw new AppError("User not found", 404);
     }
-  } catch (error) {
-    next({
-      message: error.message || "something went wrong",
-      status: "error",
-      ststusCode: 500,
+
+    res.status(200).json({
+      message: "user by id fetched",
+      status: "success",
+      data: user,
     });
-  }
-};
-// getall
-export const getALL = async (req, res) => {
-  try {
-    throw new AppError("user not found", 404);
   } catch (error) {
     next(error);
   }
 };
 
-// delete
+// * get all users
+export const getAll = async (req, res) => {
+  try {
+    const users = await User.find({});
+
+    res.status(200).json({
+      message: "all users fetched",
+      status: "success",
+      data: users,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+//* delete user
 export const remove = async (req, res, next) => {
   try {
     const { user_id } = req.params;
-    const user = await User.findById(user_id);
+
+    const user = await User.findBy(user_id);
 
     if (!user) {
-      throw new AppError("user not found", 404);
+      throw new AppError("User not found", 404);
     }
 
     if (user.profile_image) {
       await delete_file(user.profile_image.public_id);
     }
+
+    await user.deleteOne();
+
     // * success response
-    res.ststus(200).json({
+    res.status(200).json({
       message: "user deleted successfully",
       status: "success",
       data: user,
@@ -49,32 +65,37 @@ export const remove = async (req, res, next) => {
     next(error);
   }
 };
-// update
 
 export const update = async (req, res, next) => {
   try {
     const { user_id } = req.params;
-    const { first_name, last_name, phone, gender } = req.body;
-    const user = await user.findByIdAndUpdate(
+    const { first_name, last_name, gender, phone } = req.body;
+    const file = req.file;
+    const user = await User.findByIdAndUpdate(
       user_id,
-      { first_name, last_name, phone, gender },
+      { first_name, last_name, gender, phone },
       { new: true, reValidate: true }
     );
+
     if (!user) {
-      throw new AppError("user not found", 404);
+      throw new AppError("User not found", 404);
     }
 
     if (file) {
+      //* upload new file
       const { path, public_id } = await upload_file(file.path);
-      // delete old profile image
+
+      //* delete old profile image
       if (user.profile_image) {
         await delete_file(user.profile_image.public_id);
       }
 
+      // * update new profile image
       user.profile_image = {
         path,
         public_id,
       };
+
       await user.save();
     }
 
@@ -85,14 +106,5 @@ export const update = async (req, res, next) => {
     });
   } catch (error) {
     next(error);
-  }
-};
-
-export const delete_file = async (public_id) => {
-  try {
-    return await cloudinary.uploader.destroy(public_id);
-  } catch (error) {
-    console.log(error);
-    throw new AppError("file delete", 500);
   }
 };

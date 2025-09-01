@@ -1,7 +1,7 @@
 import multer from "multer";
 import fs from "fs";
 import path from "path";
-import AppError from "./error.handler.middleware.js";
+import AppError from "./error-handler.middleware.js";
 export const uploader = (destination = "/") => {
   const upLoad_folder = "uploads" + destination;
   const size_limit = 5 * 1024 * 1024; // 5mb

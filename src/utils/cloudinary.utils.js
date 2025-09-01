@@ -1,6 +1,6 @@
 import cloudinary from "../config/cloudinary.config.js";
 
-import AppError from "../middlewares/error.handler.middleware.js";
+import AppError from "../middlewares/error-handler.middleware.js";
 import fs from "fs";
 
 export const upload_file = async (file, dest = "/") => {
@@ -24,5 +24,15 @@ export const upload_file = async (file, dest = "/") => {
   } catch (error) {
     console.log(error);
     throw new AppError("file uploading error", 422);
+  }
+};
+
+// delete file
+export const delete_file = async (public_id) => {
+  try {
+    return await cloudinary.uploader.destroy(public_id);
+  } catch (error) {
+    console.log(error);
+    throw new AppError("File delete error", 500);
   }
 };

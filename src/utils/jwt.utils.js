@@ -1,5 +1,5 @@
 import { jwt_config } from "../config/config.js";
-import AppError from "../middlewares/error.handler.middleware.js";
+import AppError from "../middlewares/error-handler.middleware.js";
 import jwt from "jsonwebtoken";
 // generate token
 export const generate_token = (playload) => {

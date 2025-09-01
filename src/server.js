@@ -7,8 +7,9 @@ import user_routes from "./routes/user.routes.js";
 import booking_routes from "./routes/booking.routes.js";
 import package_routes from "./routes/package.routes.js";
 import auth_routes from "./routes/auth.routes.js";
-import { errorHandler } from "./middlewares/error.handler.middleware.js";
+import { errorHandler } from "./middlewares/error-handler.middleware.js";
 import { connect_db } from "./config/mongodb.config.js";
+import category_route from "./routes/category.route.js";
 
 const PORT = process.env.PORT;
 
@@ -50,6 +51,7 @@ app.use("/user", user_routes);
 app.use("/package", package_routes);
 app.use("/auth", auth_routes);
 app.use("/booking", booking_routes);
+app.use("/category", category_route);
 
 // 404 handler
 app.use((req, res, next) => {

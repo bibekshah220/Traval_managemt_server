@@ -1,4 +1,4 @@
-import AppError from "../middlewares/error.handler.middleware.js";
+import AppError from "../middlewares/error-handler.middleware.js";
 import bcrypt from "bcryptjs";
 // hash user password
 export const hash_password = async (password) => {
@@ -11,6 +11,6 @@ export const hash_password = async (password) => {
 };
 
 // comapre password
-export const comapre_password = async (password, hash) => {
+export const compare_passwords = async (password, hash) => {
   return await bcrypt.compare(password, hash);
 };

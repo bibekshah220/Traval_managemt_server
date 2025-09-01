@@ -1,5 +1,5 @@
 import express from "express";
-import { getALL, update, remove } from "../controllers/user.controller.js";
+import { getAll, update, remove } from "../controllers/user.controller.js";
 import { uploader } from "../middlewares/uploader.middleware.js";
 const router = express.Router();
 const upload = uploader();
@@ -9,7 +9,7 @@ const upload = uploader();
 router.put("/:id", upload.single("profile_image"), update);
 
 // get user by id
-router.get("/", getALL);
+router.get("/", getAll);
 
 router.delete("/:id", remove);
 
