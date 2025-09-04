@@ -10,7 +10,7 @@ import auth_routes from "./routes/auth.routes.js";
 import { errorHandler } from "./middlewares/error-handler.middleware.js";
 import { connect_db } from "./config/mongodb.config.js";
 import category_route from "./routes/category.route.js";
-
+import cookieParser from "cookie-parser";
 const PORT = process.env.PORT;
 
 // ! connecting to database
@@ -35,6 +35,7 @@ const middleware2 = (req, res, next) => {
 // * using middleware
 const app = express();
 app.use(express.json({ limit: "10mb" }));
+app.use(cookieParser());
 
 // serving uploads as static file
 app.get("/uploads", express.static("uploads/"));

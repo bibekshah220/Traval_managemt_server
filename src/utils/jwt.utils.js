@@ -17,7 +17,7 @@ export const generate_token = (playload) => {
 
 export const verify_token = (token) => {
   try {
-    return jwt.verify_token(token, jwt_config.jwt_secret);
+    return jwt.verify(token, jwt_config.jwt_secret);
   } catch (error) {
     console.log(error);
     throw new AppError("User authentaction error", 401);

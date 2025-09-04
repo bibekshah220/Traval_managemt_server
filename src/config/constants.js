@@ -8,3 +8,8 @@ export const Gender = {
   FEMALE: "FEMALE",
   OTHERS: "OTHERDS",
 };
+
+export const package_cost_type = {
+  PER_PERSON: "PER_PERSON",
+  PER_DAY: "PER_DAY",
+};

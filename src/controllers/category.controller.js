@@ -1,6 +1,6 @@
 import AppError from "../middlewares/error-handler.middleware.js";
 import Category from "../models/category.model.js";
-import { upload_file } from "../utils/cloudinary.utils.js";
+import { delete_file, upload_file } from "../utils/cloudinary.utils.js";
 
 const category_folder = "/categories";
 
@@ -74,13 +74,54 @@ export const create = async (req, res, next) => {
 };
 
 // * update category
+// * update category
+export const update = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { name, description } = req.body;
+    const file = req.file;
+
+    const category = await Category.findById(id);
+
+    if (!category) {
+      throw new AppError("Category not found", 404);
+    }
+
+    // Update name and description if provided
+    if (name) category.name = name;
+    if (description) category.description = description;
+
+    if (file) {
+      // Upload new logo
+      const { path, public_id } = await upload_file(file.path, category_folder);
+
+      // Delete old logo if it exists
+      if (category.logo && category.logo.public_id) {
+        await delete_file(category.logo.public_id);
+      }
+
+      // Set new logo
+      category.logo = { path, public_id };
+    }
+
+    await category.save();
+
+    res.status(200).json({
+      message: "Category updated successfully",
+      status: "success",
+      data: category,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
 
 // * delete category
 export const remove = async (req, res, next) => {
   try {
     const { id } = req.body;
 
-    const category = await Category.findBy(id);
+    const category = await Category.findById(id);
 
     if (!category) {
       throw new AppError("Category not found", 404);

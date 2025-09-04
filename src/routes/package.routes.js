@@ -1,25 +1,27 @@
 import express from "express";
 import {
   create,
-  // getBayId,
-  update,
+  getAll,
+  getById,
   remove,
+  update,
 } from "../controllers/package.controller.js";
-
+import { authenticate } from "../middlewares/auth.middleware.js";
+import { Role } from "../config/constants.js";
 const router = express.Router();
 
 // post
-router.post("/", create);
-// get all
-// router.get("/", getAll);
+router.post("/", authenticate([Role.ADMIN]), create);
 
-// getby id
-// router.get("/:id", getBayId);
+//*get all
+router.get("/", getAll);
 
-// delete
-router.delete("/:id", remove);
+//* getby id
+router.get("/:id", getById);
+//* delete
+router.delete("/:id", authenticate([Role.ADMIN]), remove);
 
-// update
-router.put("/:id", update);
+//* update
+router.put("/:id", authenticate([Role.ADMIN]), update);
 
 export default router;

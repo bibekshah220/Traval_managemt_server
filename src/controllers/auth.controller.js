@@ -39,6 +39,7 @@ export const register = async (req, res, next) => {
         public_id: public_id,
       };
     }
+    await user.save();
 
     res.status(201).json({
       message: "Account created",
@@ -85,7 +86,7 @@ export const login = async (req, res, next) => {
       role: user.role,
     });
 
-    await send_email();
+    // await send_email();
 
     res
       .cookie("access_token", access_token, {
@@ -93,7 +94,7 @@ export const login = async (req, res, next) => {
         sameSite: "none",
         maxAge:
           parseInt(process.env.COOKIE_EXPIRES_IN || 7) * 24 * 60 * 60 * 1000,
-        secure: process.env.NODE_ENV === "development" ? true : false,
+        secure: process.env.NODE_ENV === "development" ? false : true,
       })
       .status(201)
       .json({

@@ -12,7 +12,7 @@ export const uploader = (destination = "/") => {
     "webp",
     "svg",
     "gif",
-    "aviff",
+    "avif",
   ];
 
   const stroage = multer.diskStorage({
