@@ -24,6 +24,7 @@ const package_schema = new mongoose.Schema(
       required: [true, "Cover image is required"],
     },
 
+    // images
     images: [
       {
         type: {
@@ -35,7 +36,6 @@ const package_schema = new mongoose.Schema(
       },
     ],
 
-    // images
     description: {
       type: String,
       required: [true, "Description is required"],
@@ -68,7 +68,7 @@ const package_schema = new mongoose.Schema(
       {
         type: {
           location: String,
-          time: Number,
+          time: String,
         },
       },
     ],

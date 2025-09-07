@@ -1,7 +1,7 @@
 import Tour_package from "../models/package.model.js";
 import Category from "../models/category.model.js";
 import AppError from "../middlewares/error-handler.middleware.js";
-import { upload_file } from "../utils/cloudinary.utils.js";
+import { delete_file, upload_file } from "../utils/cloudinary.utils.js";
 
 const package_folder = "/packages";
 
@@ -20,10 +20,13 @@ export const create = async (req, res, next) => {
       const_type,
     } = req.body;
 
+    console.log(req.body);
     const { cover_image, images } = req.files;
     if (!cover_image) {
       throw new AppError("Cover image is required", 400);
     }
+
+    console.log(req.files);
 
     if (!images) {
       throw new AppError("Imags is required", 400);
@@ -32,8 +35,8 @@ export const create = async (req, res, next) => {
     const tour_package = new Tour_package({
       name,
       description,
-      start_date,
-      end_date,
+      start_date: new Date(start_date),
+      end_date: new Date(end_date),
       total_seats,
       seats_available: parseInt(total_seats),
       price,
@@ -51,7 +54,7 @@ export const create = async (req, res, next) => {
     // upload cocer image
 
     const { path, public_id } = await upload_file(
-      cover_image.path,
+      cover_image[0].path,
       package_folder
     );
     tour_package.cover_image = {
@@ -66,6 +69,7 @@ export const create = async (req, res, next) => {
       );
 
       const package_images = await Promise.all(promises);
+      console.log(package_images);
 
       tour_package.images = package_images;
     }
@@ -120,8 +124,15 @@ export const remove = async (req, res, next) => {
   }
 
   //* delete cover image
+  await delete_file(tour_package.cover_image.public_id);
 
   //* delete images
+
+  if (tour_package.images) {
+    await Promise.all(
+      tour_package.images.map(async (image) => delete_file(image.public_id))
+    );
+  }
 
   //* delete package
   //  await tour_package.deleteOne()

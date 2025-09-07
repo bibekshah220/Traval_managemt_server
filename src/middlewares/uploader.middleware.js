@@ -17,10 +17,10 @@ export const uploader = (destination = "/") => {
 
   const stroage = multer.diskStorage({
     destination: (req, file, cb) => {
-      cb(null, upLoad_folder);
       if (!fs.existsSync(upLoad_folder)) {
         fs.mkdirSync(upLoad_folder, { recursive: true });
       }
+      cb(null, upLoad_folder);
     },
     filename: (req, file, cb) => {
       const unique_name = Date.now() + "-" + file.originalname;
@@ -54,3 +54,4 @@ export const uploader = (destination = "/") => {
   });
   return upload;
 };
+export default uploader;
