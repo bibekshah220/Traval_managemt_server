@@ -87,6 +87,25 @@ export const create = async (req, res, next) => {
 //* get all
 export const getAll = async (req, res, next) => {
   try {
+    let filter = {};
+    const { query } = req.query;
+    if (query) {
+      filter.$or = [
+        {
+          name: {
+            $regex: query,
+            $options: "i",
+          },
+        },
+        {
+          description: {
+            $regex: query,
+            $options: "i",
+          },
+        },
+      ];
+    }
+
     const packages = await Tour_package.find({});
     res.status(200).json({
       message: "packages fetched successfully",

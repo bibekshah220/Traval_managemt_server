@@ -1,34 +1,30 @@
 import mongoose from "mongoose";
 
-const bookingSchema = new mongoose.Schema(
+const booking_model = new mongoose.Schema(
   {
-    userId: {
+    user: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
+      ref: "user",
+      required: [true, "User is required"],
     },
-    packageId: {
+    tour_package: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Package",
-      required: true,
+      ref: "tour_package",
+      required: [true, "Package is required"],
     },
-    bookingDate: {
-      type: Date,
-      default: Date.now,
+    total_price: {
+      type: Number,
+      min: [0, "PWrice must be  positive"],
+      required: [true, "Total price is required"],
     },
-    status: {
-      type: String,
-      enum: ["pending", "confirmed", "cancelled", "completed"],
-      default: "pending",
-    },
-    notes: {
-      type: String,
-      trim: true,
+    total_person: {
+      type: Number,
+      default: 1,
+      required: [true, "Number of persons are required"],
     },
   },
   { timestamps: true }
 );
 
-const Booking = mongoose.model("Booking", bookingSchema);
+const Booking = mongoose.model("booking", booking_model);
 export default Booking;
-s;
