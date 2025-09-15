@@ -88,7 +88,8 @@ export const create = async (req, res, next) => {
 export const getAll = async (req, res, next) => {
   try {
     let filter = {};
-    const { query } = req.query;
+    const { query, type, min_price, max_price, start_date, end_date } =
+      req.query;
     if (query) {
       filter.$or = [
         {
@@ -105,6 +106,15 @@ export const getAll = async (req, res, next) => {
         },
       ];
     }
+    if (type) {
+      filter.cont_type = type;
+    }
+    if (min_price || max_price) {
+      if (min_price) filter.price.$gte = min_price;
+      if (max_price) filter.price.$gte = max_price;
+    }
+    if (start_date) filter.start_date.$gte = new Date(start_date);
+    if (end_date) filter.start_date.$gte = new Date(end_date);
 
     const packages = await Tour_package.find({});
     res.status(200).json({
