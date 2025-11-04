@@ -11,6 +11,7 @@ import { errorHandler } from "./middlewares/error-handler.middleware.js";
 import { connect_db } from "./config/mongodb.config.js";
 import category_route from "./routes/category.route.js";
 import cookieParser from "cookie-parser";
+import cors from "cors";
 const PORT = process.env.PORT;
 
 // ! connecting to database
@@ -34,6 +35,7 @@ const middleware2 = (req, res, next) => {
 
 // * using middleware
 const app = express();
+app.use(cors());
 app.use(express.json({ limit: "10mb" }));
 app.use(cookieParser());
 
