@@ -192,3 +192,20 @@ export const update = async (req, res, next) => {
     next(error);
   }
 };
+
+// get all user bookings
+export const get_all = async (req, res, next) => {
+  try {
+    const userId = req.user._id;
+    const bookings = await Booking.find({ user: userId }).populate(
+      "tour_package"
+    );
+    res.status(200).json({
+      message: "All bookings fetched",
+      status: "success",
+      data: bookings,
+    });
+  } catch (error) {
+    next(error);
+  }
+};

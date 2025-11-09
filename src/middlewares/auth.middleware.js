@@ -41,7 +41,15 @@ export const authenticate = (Roles = []) => {
       ) {
         throw new AppError("Forbidden. Access denied", 403);
       }
-
+      // attach user to req object
+      req.user = {
+        _id: user._id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+        first_name: user.first_name,
+        last_name: user.last_name,
+      };
       next();
     } catch (error) {
       next(error);

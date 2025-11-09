@@ -74,7 +74,6 @@ export const create = async (req, res, next) => {
 };
 
 // * update category
-// * update category
 export const update = async (req, res, next) => {
   try {
     const { id } = req.params;
