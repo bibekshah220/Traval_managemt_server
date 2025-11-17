@@ -6,7 +6,7 @@ import Tour_package from "../models/package.model.js";
 //* post booking
 export const book = async (req, res, next) => {
   try {
-    const { tour_package, total_person } = req.body;
+    const { tour_package, total_person, phone, full_name } = req.body;
     const user = req.user._id;
     let total_price = 0;
 
@@ -32,6 +32,8 @@ export const book = async (req, res, next) => {
 
     const book_package = new Booking({
       user,
+      full_name,
+      phone,
       tour_package: tour_package._id,
       total_person: parseInt(total_person),
     });
@@ -134,7 +136,7 @@ export const remove = async (req, res, next) => {
 export const update = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { total_person } = req.body;
+    const { total_person, full_name, phone } = req.body;
     let total_price = 0;
     const booking = await Booking.findById(id);
     if (!booking) {
@@ -179,6 +181,8 @@ export const update = async (req, res, next) => {
       }
       tour_package.seats_available -= Math.abs(change_person);
     }
+    if (full_name) booking.full_name = full_name;
+    if (phone) booking.phone = phone;
 
     await booking.save();
     await tour_package.save();

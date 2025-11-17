@@ -17,6 +17,19 @@ const booking_model = new mongoose.Schema(
       min: [0, "PWrice must be  positive"],
       required: [true, "Total price is required"],
     },
+
+    full_name: {
+      type: "String",
+      required: [true, "full name is required"],
+      trim: true,
+    },
+
+    phone: {
+      type: "String",
+      required: [true, "phone is required"],
+      maxLength: 15,
+    },
+
     total_person: {
       type: Number,
       default: 1,

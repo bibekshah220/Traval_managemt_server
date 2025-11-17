@@ -15,5 +15,6 @@ router.get("/:id", authenticate([Role.USER, Role.ADMIN]), getById);
 router.post("/", authenticate([Role.USER]), book);
 
 //? get all user bookings
+router.get("/:id", authenticate([Role.USER]), getAll);
 
 export default router;
