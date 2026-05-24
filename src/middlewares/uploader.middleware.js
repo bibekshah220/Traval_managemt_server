@@ -35,14 +35,14 @@ export const uploader = (destination = "/") => {
 
     // check if ext_name is allowed
 
-    if (!allowed_extenstions.includes(ext_name)) {
+    if (!allowed_extenstions.includes(ext_name.toLowerCase())) {
       const error = new AppError(
-        `${ext_name} is not allowed.Only ${allowed_extenstions.join(
-          ","
-        )}format is supported`,
+        `${ext_name} is not allowed. Only ${allowed_extenstions.join(
+          ", "
+        )} format is supported`,
         400
       );
-      cb(error);
+      return cb(error);
     }
     cb(null, true);
   };
