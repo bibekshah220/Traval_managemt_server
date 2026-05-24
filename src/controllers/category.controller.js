@@ -5,7 +5,7 @@ import { delete_file, upload_file } from "../utils/cloudinary.utils.js";
 const category_folder = "/categories";
 
 //* get all categories
-export const get_all = async (req, res) => {
+export const get_all = async (req, res, next) => {
   try {
     const categories = await Category.find({});
     res.status(200).json({
@@ -19,7 +19,7 @@ export const get_all = async (req, res) => {
 };
 
 // * get category by id
-export const get_by_id = async (req, res) => {
+export const get_by_id = async (req, res, next) => {
   try {
     const { id } = req.params;
     const category = await Category.findById(id);
@@ -46,7 +46,7 @@ export const create = async (req, res, next) => {
     const file = req.file;
 
     if (!file) {
-      throw new AppError("category logo is required");
+      throw new AppError("category logo is required", 400);
     }
 
     //* 2.  create category model instance
