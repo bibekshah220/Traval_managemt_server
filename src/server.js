@@ -10,6 +10,7 @@ import auth_routes from "./routes/auth.routes.js";
 import { errorHandler } from "./middlewares/error-handler.middleware.js";
 import { connect_db } from "./config/mongodb.config.js";
 import category_route from "./routes/category.route.js";
+import contact_route from "./routes/contact.route.js";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 const PORT = process.env.PORT;
@@ -18,26 +19,11 @@ const PORT = process.env.PORT;
 
 connect_db();
 
-const middleware1 = (req, res, next) => {
-  console.log("i am middleware 1");
-  console.log(req.user);
-  next();
-};
-
-const middleware2 = (req, res, next) => {
-  console.log("i am middleware 2");
-  req.user = {
-    name: "bibek",
-    email: "bibekshah425@gmail.com",
-  };
-  next();
-};
-
 // * using middleware
 const app = express();
 app.use(
   cors({
-    origin: "http://localhost:5173/",
+    origin: process.env.CLIENT_URL || "http://localhost:5173",
     credentials: true,
   })
 );
@@ -45,7 +31,7 @@ app.use(express.json({ limit: "10mb" }));
 app.use(cookieParser());
 
 // serving uploads as static file
-app.get("/uploads", express.static("uploads/"));
+app.use("/uploads", express.static("uploads/"));
 
 // ping route
 app.get("/", (req, res) => {
@@ -54,12 +40,13 @@ app.get("/", (req, res) => {
   });
 });
 
-// ! using routes
-app.use("/user", user_routes);
-app.use("/package", package_routes);
-app.use("/auth", auth_routes);
-app.use("/booking", booking_routes);
-app.use("/category", category_route);
+// ! using routes (client baseURL is ".../api/")
+app.use("/api/user", user_routes);
+app.use("/api/package", package_routes);
+app.use("/api/auth", auth_routes);
+app.use("/api/booking", booking_routes);
+app.use("/api/category", category_route);
+app.use("/api/contact", contact_route);
 
 // 404 handler
 app.use((req, res, next) => {
