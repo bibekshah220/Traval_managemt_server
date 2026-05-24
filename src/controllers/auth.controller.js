@@ -41,6 +41,9 @@ export const register = async (req, res, next) => {
     }
     await user.save();
 
+    // do not leak the password hash back to the client
+    user.password = undefined;
+
     res.status(201).json({
       message: "Account created",
       status: "success",
@@ -70,8 +73,7 @@ export const login = async (req, res, next) => {
       throw new AppError("email or password does not match", 400);
     }
 
-    // const isPassMatch = user.password === data.password;
-    const isPassMatch = compare_passwords(password, user.password);
+    const isPassMatch = await compare_passwords(password, user.password);
 
     if (!isPassMatch) {
       throw new AppError("email or password does not match", 400);
@@ -86,15 +88,19 @@ export const login = async (req, res, next) => {
       role: user.role,
     });
 
-    // await send_email();
+    // do not leak the password hash back to the client
+    user.password = undefined;
+
+    const is_prod = process.env.NODE_ENV === "production";
 
     res
       .cookie("access_token", access_token, {
         httpOnly: true,
-        sameSite: "none",
+        // "none" requires secure:true (HTTPS); use "lax" for http localhost dev
+        sameSite: is_prod ? "none" : "lax",
         maxAge:
           parseInt(process.env.COOKIE_EXPIRES_IN || 7) * 24 * 60 * 60 * 1000,
-        secure: process.env.NODE_ENV === "development" ? false : true,
+        secure: is_prod,
       })
       .status(201)
       .json({
@@ -105,6 +111,46 @@ export const login = async (req, res, next) => {
           access_token,
         },
       });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// * return the currently authenticated user (auth middleware attaches req.user)
+export const me = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user._id);
+
+    if (!user) {
+      throw new AppError("User not found", 404);
+    }
+
+    res.status(200).json({
+      message: "current user fetched",
+      status: "success",
+      data: user,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// * clear the auth cookie
+export const logout = async (req, res, next) => {
+  try {
+    const is_prod = process.env.NODE_ENV === "production";
+
+    res.clearCookie("access_token", {
+      httpOnly: true,
+      sameSite: is_prod ? "none" : "lax",
+      secure: is_prod,
+    });
+
+    res.status(200).json({
+      message: "logout success",
+      status: "success",
+      data: null,
+    });
   } catch (error) {
     next(error);
   }
