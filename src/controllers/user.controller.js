@@ -3,7 +3,7 @@ import User from "../models/user.model.js";
 import { delete_file, upload_file } from "../utils/cloudinary.utils.js";
 
 // * get user by id
-export const getById = async (req, res) => {
+export const getById = async (req, res, next) => {
   try {
     const { user_id } = req.params;
 
@@ -24,7 +24,7 @@ export const getById = async (req, res) => {
 };
 
 // * get all users
-export const getAll = async (req, res) => {
+export const getAll = async (req, res, next) => {
   try {
     const users = await User.find({});
 
@@ -43,7 +43,7 @@ export const remove = async (req, res, next) => {
   try {
     const { user_id } = req.params;
 
-    const user = await User.findBy(user_id);
+    const user = await User.findById(user_id);
 
     if (!user) {
       throw new AppError("User not found", 404);
@@ -74,7 +74,7 @@ export const update = async (req, res, next) => {
     const user = await User.findByIdAndUpdate(
       user_id,
       { first_name, last_name, gender, phone },
-      { new: true, reValidate: true }
+      { new: true, runValidators: true }
     );
 
     if (!user) {
