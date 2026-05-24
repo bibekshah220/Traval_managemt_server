@@ -123,14 +123,20 @@ export const getAll = async (req, res, next) => {
     }
 
     if (min_price || max_price) {
-      if (min_price) filter.price.$gte = min_price;
-      if (max_price) filter.price.$lte = max_price;
+      filter.price = {};
+      if (min_price) filter.price.$gte = Number(min_price);
+      if (max_price) filter.price.$lte = Number(max_price);
     }
 
-    if (start_date) filter.start_date.$gte = new Date(start_date);
-    if (end_date) filter.end_date.$lte = new Date(end_date);
+    if (start_date) {
+      filter.start_date = { $gte: new Date(start_date) };
+    }
+    if (end_date) {
+      filter.end_date = { $lte: new Date(end_date) };
+    }
 
     const packages = await Tour_package.find(filter)
+      .populate("category")
       .limit(query_limit)
       .skip(skip)
       .sort({ createdAt: -1 });
@@ -153,9 +159,9 @@ export const getAll = async (req, res, next) => {
 export const getById = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const tour_package = await Tour_package.findById(id);
+    const tour_package = await Tour_package.findById(id).populate("category");
     if (!tour_package) {
-      throw AppError("Package not found", 404);
+      throw new AppError("Package not found", 404);
     }
     res.status(200).json({
       message: "package fetched",
@@ -168,36 +174,42 @@ export const getById = async (req, res, next) => {
 };
 
 export const remove = async (req, res, next) => {
-  const { id } = req.params;
-  const tour_package = await Tour_package.findById(id);
+  try {
+    const { id } = req.params;
+    const tour_package = await Tour_package.findById(id);
 
-  if (!tour_package) {
-    throw AppError("Package not found", 404);
+    if (!tour_package) {
+      throw new AppError("Package not found", 404);
+    }
+
+    //* delete cover image
+    if (tour_package.cover_image?.public_id) {
+      await delete_file(tour_package.cover_image.public_id);
+    }
+
+    //* delete images
+    if (tour_package.images) {
+      await Promise.all(
+        tour_package.images.map(
+          async (image) => await delete_file(image.public_id)
+        )
+      );
+    }
+
+    //* delete package
+    await tour_package.deleteOne();
+    res.status(200).json({
+      message: "package deleted",
+      status: "success",
+      data: tour_package,
+    });
+  } catch (error) {
+    next(error);
   }
-
-  //* delete cover image
-  await delete_file(tour_package.cover_image.public_id);
-
-  //* delete images
-  if (tour_package.images) {
-    await Promise.all(
-      tour_package.images.map(
-        async (image) => await delete_file(image.public_id)
-      )
-    );
-  }
-
-  //* delete package
-  await tour_package.deleteOne();
-  res.status(200).json({
-    message: "package deleted",
-    status: "success",
-    data: tour_package,
-  });
 };
 
 // update
-export const update = async (req, res) => {
+export const update = async (req, res, next) => {
   try {
     const { id } = req.params;
     const {
@@ -212,17 +224,27 @@ export const update = async (req, res) => {
       cost_type,
     } = req.body;
 
-    const { cover_image, images } = req.files;
+    // req.files is undefined when no files are uploaded
+    const cover_image = req.files?.cover_image;
+    const images = req.files?.images;
 
     const tour_package = await Tour_package.findById(id);
 
     if (!tour_package) {
-      throw AppError("Package not found", 404);
+      throw new AppError("Package not found", 404);
     }
 
     if (name) tour_package.name = name;
     if (description) tour_package.description = description;
-    if (total_seats) tour_package.total_seats = parseInt(total_seats);
+    if (total_seats) {
+      // keep available seats in sync with the change in total seats
+      const diff = parseInt(total_seats) - tour_package.total_seats;
+      tour_package.total_seats = parseInt(total_seats);
+      tour_package.seats_available = Math.max(
+        0,
+        tour_package.seats_available + diff
+      );
+    }
     if (cost_type) tour_package.cost_type = cost_type;
     if (price) tour_package.price = price;
     if (end_date) tour_package.end_date = new Date(end_date);
@@ -239,8 +261,10 @@ export const update = async (req, res) => {
     }
 
     // cover image
-    if (cover_image[0]) {
-      await delete_file(tour_package.cover_image.public_id);
+    if (cover_image && cover_image[0]) {
+      if (tour_package.cover_image?.public_id) {
+        await delete_file(tour_package.cover_image.public_id);
+      }
       const { path, public_id } = await upload_file(
         cover_image[0].path,
         package_folder
@@ -252,11 +276,28 @@ export const update = async (req, res) => {
     }
 
     // images
-    if (images && Array.isArray(images))
-      res.status(200).json({
-        message: "package updated",
-        status: "success",
-      });
+    if (images && Array.isArray(images) && images.length > 0) {
+      // remove old images from cloudinary
+      if (tour_package.images?.length) {
+        await Promise.all(
+          tour_package.images.map(
+            async (image) => await delete_file(image.public_id)
+          )
+        );
+      }
+      const uploaded = await Promise.all(
+        images.map(async (image) => await upload_file(image.path, package_folder))
+      );
+      tour_package.images = uploaded;
+    }
+
+    await tour_package.save();
+
+    res.status(200).json({
+      message: "package updated",
+      status: "success",
+      data: tour_package,
+    });
   } catch (error) {
     next(error);
   }
