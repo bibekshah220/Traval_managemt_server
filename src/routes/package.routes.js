@@ -40,6 +40,20 @@ router.get("/:id", getById);
 router.delete("/:id", authenticate([Role.ADMIN]), remove);
 
 //* update
-router.put("/:id", authenticate([Role.ADMIN]), update);
+router.put(
+  "/:id",
+  authenticate([Role.ADMIN]),
+  upload.fields([
+    {
+      name: "cover_image",
+      maxCount: 1,
+    },
+    {
+      name: "images",
+      maxCount: 6,
+    },
+  ]),
+  update
+);
 
 export default router;
