@@ -6,7 +6,7 @@ export const Role = {
 export const Gender = {
   MALE: "MALE",
   FEMALE: "FEMALE",
-  OTHERS: "OTHERDS",
+  OTHERS: "OTHERS",
 };
 
 export const package_cost_type = {
