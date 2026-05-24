@@ -40,10 +40,10 @@ export const send_email = async (
     }
 
     if (attachment) {
-      message_option["attachment"] = attachment;
+      message_option["attachments"] = attachment;
     }
 
-    await transpoter.sendMail({});
+    await transpoter.sendMail(message_option);
   } catch (error) {
     console.log(error);
     throw new AppError("Email sending error.", 500);
