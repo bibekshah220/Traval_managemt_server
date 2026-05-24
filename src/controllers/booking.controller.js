@@ -26,7 +26,14 @@ export const book = async (req, res, next) => {
     if (booked_tour_package.seats_available === 0) {
       throw new AppError(
         "Seats already full. Please contact with support.",
-        404
+        400
+      );
+    }
+
+    if (parseInt(total_person) > booked_tour_package.seats_available) {
+      throw new AppError(
+        `Only ${booked_tour_package.seats_available} seat(s) available`,
+        400
       );
     }
 
@@ -34,7 +41,7 @@ export const book = async (req, res, next) => {
       user,
       full_name,
       phone,
-      tour_package: tour_package._id,
+      tour_package,
       total_person: parseInt(total_person),
     });
 
@@ -49,7 +56,7 @@ export const book = async (req, res, next) => {
       ).toFixed(2);
     } else {
       total_price = (
-        parseInt(total_price) *
+        parseInt(total_person) *
         booked_tour_package.price *
         total_days
       ).toFixed(2);
@@ -140,54 +147,58 @@ export const update = async (req, res, next) => {
     let total_price = 0;
     const booking = await Booking.findById(id);
     if (!booking) {
-      throw new AppError("Booking not found", 400);
+      throw new AppError("Booking not found", 404);
     }
 
     const tour_package = await Tour_package.findById(booking.tour_package);
 
-    if (tour_package) {
-      throw new AppError("Package not found", 400);
+    if (!tour_package) {
+      throw new AppError("Package not found", 404);
     }
 
-    const change_person = booking.total_person - Number(total_person);
+    if (total_person !== undefined) {
+      // positive => seats freed up, negative => extra seats needed
+      const change_person = booking.total_person - Number(total_person);
 
-    const total_days =
-      (new Date(booked_tour_package.end_date).getTime() -
-        new Date(booked_tour_package.start_date).getTime()) /
-      (1000 * 24 * 60 * 60);
-
-    if (booked_tour_package.cost_type === package_cost_type.PER_PERSON) {
-      total_price = (
-        parseInt(total_person) * booked_tour_package.price
-      ).toFixed(2);
-    } else {
-      total_price = (
-        parseInt(total_person) *
-        booked_tour_package.price *
-        total_days
-      ).toFixed(2);
-    }
-
-    booking.total_person = Number(total_person);
-    booking.total_price = total_price;
-
-    if (change_person > 0) {
-      tour_package.seats_available += Math.abs(change_person);
-    } else {
-      if (Math.abs(total_person) > tour_package.seats_available) {
-        throw new AppError(
-          `only ${tour_package.seats_available} seats available`
-        );
+      if (change_person >= 0) {
+        tour_package.seats_available += change_person;
+      } else {
+        const extra_needed = Math.abs(change_person);
+        if (extra_needed > tour_package.seats_available) {
+          throw new AppError(
+            `only ${tour_package.seats_available} seats available`,
+            400
+          );
+        }
+        tour_package.seats_available -= extra_needed;
       }
-      tour_package.seats_available -= Math.abs(change_person);
+
+      const total_days =
+        (new Date(tour_package.end_date).getTime() -
+          new Date(tour_package.start_date).getTime()) /
+        (1000 * 24 * 60 * 60);
+
+      if (tour_package.cost_type === package_cost_type.PER_PERSON) {
+        total_price = (parseInt(total_person) * tour_package.price).toFixed(2);
+      } else {
+        total_price = (
+          parseInt(total_person) *
+          tour_package.price *
+          total_days
+        ).toFixed(2);
+      }
+
+      booking.total_person = Number(total_person);
+      booking.total_price = total_price;
     }
+
     if (full_name) booking.full_name = full_name;
     if (phone) booking.phone = phone;
 
     await booking.save();
     await tour_package.save();
 
-    res.status(201).json({
+    res.status(200).json({
       message: "Booking updated",
       status: "success",
       data: booking,
