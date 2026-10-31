@@ -31,8 +31,11 @@ app.use(
 app.use(express.json({ limit: "10mb" }));
 app.use(cookieParser());
 
-// serving uploads as static file
-app.use("/uploads", express.static("uploads/"));
+// serving uploads as static file (local only — the serverless disk is
+// ephemeral, and uploaded files live on Cloudinary once processed)
+if (!process.env.VERCEL) {
+  app.use("/uploads", express.static("uploads/"));
+}
 
 // ping route
 app.get("/", (req, res) => {
@@ -66,7 +69,13 @@ app.use((req, res, next) => {
 app.use(errorHandler);
 
 // * start server
-app.listen(PORT, () => {
-  console.log(`Server is running at http://localhost:${PORT}`);
-  console.log(`Press Ctrl + C to stop the server`);
-});
+// On Vercel the platform invokes the exported app; binding a port there
+// would hold the invocation open and time out.
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`Server is running at http://localhost:${PORT}`);
+    console.log(`Press Ctrl + C to stop the server`);
+  });
+}
+
+export default app;
