@@ -11,6 +11,10 @@ if (!cached) {
 export const connect_db = async () => {
   if (cached.conn) return cached.conn;
 
+  if (!mongodb_config.url) {
+    throw new Error("DB_URI is not set in this environment");
+  }
+
   if (!cached.promise) {
     cached.promise = mongoose
       .connect(mongodb_config.url, {
