@@ -17,7 +17,8 @@ import cors from "cors";
 const PORT = process.env.PORT;
 
 // ! connecting to database
-
+// Kick the connection off at boot for the long-running case. On serverless
+// the container may start cold, so each request also awaits it below.
 connect_db();
 
 // * using middleware
@@ -28,6 +29,25 @@ app.use(
     credentials: true,
   })
 );
+// Every request waits for a live connection before it reaches a route.
+// Without this mongoose silently buffers queries against a connection that
+// may never open, and the request dies with an opaque "buffering timed out"
+// instead of the actual reason Atlas refused.
+app.use(async (req, res, next) => {
+  try {
+    await connect_db();
+    next();
+  } catch (error) {
+    next({
+      message:
+        "Database connection failed. Check DB_URI and the Atlas network access list.",
+      error,
+      statusCode: 503,
+      status: "error",
+    });
+  }
+});
+
 app.use(express.json({ limit: "10mb" }));
 app.use(cookieParser());
 

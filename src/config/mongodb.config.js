@@ -19,7 +19,9 @@ export const connect_db = async () => {
         dbName: mongodb_config.db_name,
         autoCreate: true,
         // fail fast rather than hang the whole invocation
-        serverSelectionTimeoutMS: 10000,
+        serverSelectionTimeoutMS: 8000,
+        // fail the request instead of queueing it behind a dead connection
+        bufferCommands: false,
       })
       .then((m) => {
         console.log("database connected successfully");
