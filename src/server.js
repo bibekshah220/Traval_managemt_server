@@ -11,6 +11,7 @@ import { errorHandler } from "./middlewares/error-handler.middleware.js";
 import { connect_db } from "./config/mongodb.config.js";
 import category_route from "./routes/category.route.js";
 import contact_route from "./routes/contact.route.js";
+import content_route from "./routes/content.route.js";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 const PORT = process.env.PORT;
@@ -47,6 +48,7 @@ app.use("/api/auth", auth_routes);
 app.use("/api/booking", booking_routes);
 app.use("/api/category", category_route);
 app.use("/api/contact", contact_route);
+app.use("/api/content", content_route);
 
 // 404 handler
 app.use((req, res, next) => {
