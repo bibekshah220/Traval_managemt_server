@@ -16,7 +16,6 @@ export const connect_db = async () => {
       .connect(mongodb_config.url, {
         dbName: mongodb_config.db_name,
         autoCreate: true,
-        // fail fast rather than hang the whole invocation
         serverSelectionTimeoutMS: 8000,
         bufferCommands: false,
       })
