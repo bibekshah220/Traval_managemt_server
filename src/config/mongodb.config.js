@@ -1,7 +1,9 @@
 import mongoose from "mongoose";
 import { mongodb_config } from "./config.js";
 
-// Warm containers reuse the process, so cache the pool or Atlas hits its limit.
+// A serverless invocation reuses a warm container, so the connection is
+// cached on globalThis. Without this each request opens a new pool and
+// Atlas drops them once the connection limit is reached.
 let cached = globalThis.__mongoose_conn;
 
 if (!cached) {
@@ -16,7 +18,9 @@ export const connect_db = async () => {
       .connect(mongodb_config.url, {
         dbName: mongodb_config.db_name,
         autoCreate: true,
+        // fail fast rather than hang the whole invocation
         serverSelectionTimeoutMS: 8000,
+        // fail the request instead of queueing it behind a dead connection
         bufferCommands: false,
       })
       .then((m) => {
@@ -24,8 +28,9 @@ export const connect_db = async () => {
         return m;
       })
       .catch((error) => {
-        cached.promise = null; // let the next request retry
-
+        // clear the slot so the next request retries instead of reusing
+        // a permanently rejected promise
+        cached.promise = null;
         console.log("------------db connection error------------------");
         console.log(error);
         throw error;

@@ -2,7 +2,9 @@ import multer from "multer";
 import fs from "fs";
 import path from "path";
 import AppError from "./error-handler.middleware.js";
-// Serverless disks are read-only outside /tmp; these are staged then sent to Cloudinary.
+// Serverless filesystems are read-only except for /tmp, so an upload that
+// writes into the project directory throws EROFS. These files are only a
+// staging area: upload_file() pushes them to Cloudinary and unlinks them.
 const UPLOAD_ROOT = process.env.VERCEL ? "/tmp/uploads" : "uploads";
 
 export const uploader = (destination = "/") => {

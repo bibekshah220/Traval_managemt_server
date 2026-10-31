@@ -17,6 +17,8 @@ import cors from "cors";
 const PORT = process.env.PORT;
 
 // ! connecting to database
+// Kick the connection off at boot for the long-running case. On serverless
+// the container may start cold, so each request also awaits it below.
 connect_db();
 
 // * using middleware
@@ -27,7 +29,10 @@ app.use(
     credentials: true,
   })
 );
-// Without this a dead connection surfaces as "buffering timed out", not its cause.
+// Every request waits for a live connection before it reaches a route.
+// Without this mongoose silently buffers queries against a connection that
+// may never open, and the request dies with an opaque "buffering timed out"
+// instead of the actual reason Atlas refused.
 app.use(async (req, res, next) => {
   try {
     await connect_db();
@@ -46,7 +51,8 @@ app.use(async (req, res, next) => {
 app.use(express.json({ limit: "10mb" }));
 app.use(cookieParser());
 
-// serving uploads as static file (local only — the serverless disk is ephemeral)
+// serving uploads as static file (local only — the serverless disk is
+// ephemeral, and uploaded files live on Cloudinary once processed)
 if (!process.env.VERCEL) {
   app.use("/uploads", express.static("uploads/"));
 }
@@ -82,7 +88,9 @@ app.use((req, res, next) => {
 // ! error handler
 app.use(errorHandler);
 
-// * start server — binding a port on Vercel would hold the invocation open
+// * start server
+// On Vercel the platform invokes the exported app; binding a port there
+// would hold the invocation open and time out.
 if (!process.env.VERCEL) {
   app.listen(PORT, () => {
     console.log(`Server is running at http://localhost:${PORT}`);
