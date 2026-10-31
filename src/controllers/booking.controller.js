@@ -124,12 +124,16 @@ export const remove = async (req, res, next) => {
     const tour_package = await Tour_package.findById(booking.tour_package);
 
     if (tour_package) {
-      tour_package.seats_available += booking.total_person;
+      tour_package.seats_available = Math.min(
+        tour_package.total_seats,
+        tour_package.seats_available + booking.total_person
+      );
+      await tour_package.save();
     }
 
     await booking.deleteOne();
     res.status(200).json({
-      message: "Package deleted",
+      message: "Booking cancelled",
       status: "success",
       data: null,
     });
