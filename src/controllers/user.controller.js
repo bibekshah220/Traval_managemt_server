@@ -1,6 +1,7 @@
 import AppError from "../middlewares/error-handler.middleware.js";
 import User from "../models/user.model.js";
 import { delete_file, upload_file } from "../utils/cloudinary.utils.js";
+import { compare_passwords, hash_password } from "../utils/bcrypt.utils.js";
 import { Role, Gender } from "../config/constants.js";
 
 const avatar_folder = "/avatar";
@@ -129,6 +130,58 @@ export const update = async (req, res, next) => {
       message: "profile updated",
       status: "success",
       data: user,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+//* change password
+export const change_password = async (req, res, next) => {
+  try {
+    const { user_id } = req.params;
+    assert_self_or_admin(req, user_id);
+
+    const { current_password, new_password } = req.body;
+
+    if (!current_password || !new_password) {
+      throw new AppError(
+        "current_password and new_password are required",
+        400
+      );
+    }
+
+    if (String(new_password).length < 8) {
+      throw new AppError("New password must be at least 8 characters", 400);
+    }
+
+    if (current_password === new_password) {
+      throw new AppError(
+        "New password must be different from the current one",
+        400
+      );
+    }
+
+    // password is select:false on the schema, so ask for it explicitly
+    const user = await User.findById(user_id).select("+password");
+
+    if (!user) {
+      throw new AppError("User not found", 404);
+    }
+
+    const matched = await compare_passwords(current_password, user.password);
+
+    if (!matched) {
+      throw new AppError("Current password is incorrect", 401);
+    }
+
+    user.password = await hash_password(new_password);
+    await user.save();
+
+    res.status(200).json({
+      message: "password changed",
+      status: "success",
+      data: null,
     });
   } catch (error) {
     next(error);

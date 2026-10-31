@@ -4,6 +4,7 @@ import {
   getById,
   update,
   remove,
+  change_password,
 } from "../controllers/user.controller.js";
 import { uploader } from "../middlewares/uploader.middleware.js";
 import { authenticate } from "../middlewares/auth.middleware.js";
@@ -23,6 +24,13 @@ router.put(
   authenticate([Role.USER, Role.ADMIN]),
   upload.single("profile_image"),
   update
+);
+
+// change password
+router.put(
+  "/:user_id/password",
+  authenticate([Role.USER, Role.ADMIN]),
+  change_password
 );
 
 // delete user
