@@ -2,8 +2,11 @@ import multer from "multer";
 import fs from "fs";
 import path from "path";
 import AppError from "./error-handler.middleware.js";
+// Serverless disks are read-only outside /tmp; these are staged then sent to Cloudinary.
+const UPLOAD_ROOT = process.env.VERCEL ? "/tmp/uploads" : "uploads";
+
 export const uploader = (destination = "/") => {
-  const upLoad_folder = "uploads" + destination;
+  const upLoad_folder = UPLOAD_ROOT + destination;
   const size_limit = 5 * 1024 * 1024; // 5mb
   const allowed_extenstions = [
     "png",

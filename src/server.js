@@ -17,7 +17,6 @@ import cors from "cors";
 const PORT = process.env.PORT;
 
 // ! connecting to database
-
 connect_db();
 
 // * using middleware
@@ -28,11 +27,29 @@ app.use(
     credentials: true,
   })
 );
+// Without this a dead connection surfaces as "buffering timed out", not its cause.
+app.use(async (req, res, next) => {
+  try {
+    await connect_db();
+    next();
+  } catch (error) {
+    next({
+      message:
+        "Database connection failed. Check DB_URI and the Atlas network access list.",
+      error,
+      statusCode: 503,
+      status: "error",
+    });
+  }
+});
+
 app.use(express.json({ limit: "10mb" }));
 app.use(cookieParser());
 
-// serving uploads as static file
-app.use("/uploads", express.static("uploads/"));
+// serving uploads as static file (local only — the serverless disk is ephemeral)
+if (!process.env.VERCEL) {
+  app.use("/uploads", express.static("uploads/"));
+}
 
 // ping route
 app.get("/", (req, res) => {
@@ -65,8 +82,12 @@ app.use((req, res, next) => {
 // ! error handler
 app.use(errorHandler);
 
-// * start server
-app.listen(PORT, () => {
-  console.log(`Server is running at http://localhost:${PORT}`);
-  console.log(`Press Ctrl + C to stop the server`);
-});
+// * start server — binding a port on Vercel would hold the invocation open
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`Server is running at http://localhost:${PORT}`);
+    console.log(`Press Ctrl + C to stop the server`);
+  });
+}
+
+export default app;
