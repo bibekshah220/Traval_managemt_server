@@ -38,9 +38,11 @@ app.use(async (req, res, next) => {
     await connect_db();
     next();
   } catch (error) {
+    const unset = !process.env.DB_URI;
     next({
-      message:
-        "Database connection failed. Check DB_URI and the Atlas network access list.",
+      message: unset
+        ? "DB_URI is not set on this deployment. Add it in the project environment variables and redeploy."
+        : "DB_URI is set but the database refused the connection. Allow this platform in the Atlas network access list.",
       error,
       statusCode: 503,
       status: "error",
